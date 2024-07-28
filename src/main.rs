@@ -23,7 +23,9 @@ impl Game {
             ]
         );
 
-        let shader = Shader::from_files("default.vert.glsl", "default.frag.glsl").unwrap();
+        let mut shader = Shader::from_files("default.vert.glsl", "default.frag.glsl").unwrap();
+        shader.bind();
+        shader.uniform_vec3("u_Color", nalgebra_glm::vec3(0.0, 1.0, 0.0));
 
         while !self.display.should_close() {
             #[allow(clippy::match_like_matches_macro)]

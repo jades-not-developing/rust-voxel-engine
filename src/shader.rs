@@ -1,6 +1,8 @@
-use std::{ffi::CString, path::Path};
+use std::{collections::HashMap, ffi::CString, path::Path};
 
-use gl::types::{GLchar, GLuint};
+use gl::types::{GLchar, GLint, GLuint};
+
+use nalgebra_glm as glm;
 
 #[derive(Debug, Clone)]
 pub enum ShaderType {
@@ -19,6 +21,8 @@ impl Into<u32> for ShaderType {
 
 pub struct Shader {
     program_id: GLuint,
+
+    uniform_cache: HashMap<String, GLint>,
 }
 
 impl Shader {
@@ -54,8 +58,12 @@ impl Shader {
                 );
             }
 
+            gl::DeleteShader(vertex);
+            gl::DeleteShader(fragment);
+
             Ok(Self {
-                program_id
+                program_id,
+                uniform_cache: HashMap::new(),
             })
         }
     }
@@ -69,6 +77,30 @@ impl Shader {
     pub fn unbind(&self) {
         unsafe {
             gl::UseProgram(0);
+        }
+    }
+
+    pub fn uniform_vec3(&mut self, name: impl Into<String>, value: glm::Vec3) {
+        let location = self.uniform_location(name);
+
+        unsafe {
+            gl::Uniform3f(location, value.x, value.y, value.z);
+        }
+    }
+
+    fn uniform_location(&mut self, name: impl Into<String>) -> GLint {
+        let name = name.into();
+        match self.uniform_cache.get(&name) {
+            Some(l) => *l,
+            None => {
+                let name_cstr = CString::new(name.clone()).expect("Failed to convert name to cstring");
+                let loc = unsafe {
+                    gl::GetUniformLocation(self.program_id, name_cstr.as_ptr())
+                };
+                self.uniform_cache.insert(name, loc);
+
+                loc
+            }
         }
     }
 
@@ -109,6 +141,14 @@ impl Shader {
             }
 
             Ok(shader_id)
+        }
+    }
+}
+
+impl Drop for Shader {
+    fn drop(&mut self) {
+        unsafe {
+            gl::DeleteProgram(self.program_id);
         }
     }
 }
