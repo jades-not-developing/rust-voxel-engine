@@ -47,6 +47,10 @@ impl Mouse {
         value
     }
 
+    /// # Safety
+    /// This method is marked `unsafe` because using this will not signal
+    /// that the mouse has moved at all. Please use `Mouse::handle_move`
+    /// for general mouse movement.
     pub unsafe fn force_set_position(&mut self, x: f64, y: f64) {
         self.dx = x;
         self.dy = y;

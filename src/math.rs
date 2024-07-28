@@ -12,7 +12,5 @@ pub fn create_transformation_matrix(
     let matrix = glm::rotate(&matrix, rx.to_radians(), &glm::vec3(1., 0., 0.));
     let matrix = glm::rotate(&matrix, ry.to_radians(), &glm::vec3(0., 1., 0.));
     let matrix = glm::rotate(&matrix, rz.to_radians(), &glm::vec3(0., 0., 1.));
-    let matrix = glm::scale(&matrix, &glm::vec3(scale, scale, scale));
-
-    matrix
+    glm::scale(&matrix, &glm::vec3(scale, scale, scale))
 }

@@ -1,6 +1,7 @@
 use crate::{math, model::Model};
 use nalgebra_glm as glm;
 
+#[derive(Clone)]
 pub struct Entity {
     pub model: Model,
     pub position: glm::Vec3,
@@ -9,9 +10,9 @@ pub struct Entity {
 }
 
 impl Entity {
-    pub fn new(model: Model, position: glm::Vec3, rotation: (f32, f32, f32), scale: f32) -> Self {
+    pub fn new(model: &Model, position: glm::Vec3, rotation: (f32, f32, f32), scale: f32) -> Self {
         Self {
-            model,
+            model: model.clone(),
             position,
             rotation,
             scale,

@@ -2,7 +2,7 @@
 use glfw::{Action, Key};
 use nalgebra_glm as glm;
 use rust_voxel::{
-    camera::Camera, display::Display, entity::Entity, loader::Loader, model::Model, mouse::Mouse, renderer::MasterRenderer, shader::Shader
+    camera::Camera, display::Display, entity::Entity, loader::Loader, model::Model, renderer::MasterRenderer, shader::Shader
 };
 
 pub struct Game {
@@ -94,7 +94,13 @@ impl Game {
             texture,
         };
 
-        let mut entity = Entity::new(model, glm::vec3(0., 0., -2.), (0., 0., 0.), 1.0);
+        let mut entites = vec![];
+
+        for x in -10..10 {
+            for z in -10..10 {
+                entites.push(Entity::new(&model, glm::vec3(x as f32, 0., z as f32), (0., 0., 0.), 1.0));
+            }
+        }
 
         let mut shader = Shader::from_files("default.vert.glsl", "default.frag.glsl").unwrap();
         shader.bind();
@@ -127,14 +133,15 @@ impl Game {
             });
             self.display.mouse.unlock();
 
-            entity.rotate(0., 0.5, 0.5);
             camera.move_camera(&mut self.display);
 
 
             shader.bind();
             shader.uniform_mat4("u_View", camera.get_view_matrix());
             self.renderer.prepare();
-            self.renderer.render(&entity, &mut shader);
+            for entity in &entites {
+                self.renderer.render(entity, &mut shader);
+            }
             shader.unbind();
 
             self.display.swap_buffers();

@@ -64,11 +64,9 @@ impl Camera {
             self.rotation.2.to_radians(),
             &glm::vec3(0., 0., 1.),
         );
-        let matrix = glm::translate(
+        glm::translate(
             &matrix,
             &glm::vec3(-self.position.x, -self.position.y, -self.position.z),
-        );
-
-        matrix
+        )
     }
 }

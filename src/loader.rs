@@ -5,6 +5,7 @@ use gl::types::{GLint, GLuint};
 
 use crate::texture::Texture;
 
+#[derive(Clone)]
 pub struct RawModel {
     pub vao_id: GLuint,
     pub index_count: GLint,

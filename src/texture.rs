@@ -1,5 +1,6 @@
 use gl::types::GLuint;
 
+#[derive(Clone)]
 pub struct Texture {
     pub texture_id: GLuint,
 }

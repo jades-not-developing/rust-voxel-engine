@@ -1,4 +1,4 @@
-use glfw::{fail_on_errors, ffi::{glfwSetInputMode, CURSOR, CURSOR_DISABLED}, Context, Glfw, GlfwReceiver, Key, PWindow, WindowEvent, WindowHint};
+use glfw::{fail_on_errors, ffi::{glfwSetInputMode, CURSOR, CURSOR_DISABLED}, Context, Glfw, GlfwReceiver, PWindow, WindowEvent, WindowHint};
 
 use crate::{keyboard::Keyboard, mouse::Mouse};
 
