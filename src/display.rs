@@ -9,7 +9,8 @@ pub struct Display {
 impl Display {
     pub fn new(width: u32, height: u32, title: impl AsRef<str>) -> Self {
         let mut glfw = glfw::init(fail_on_errors!()).unwrap();
-        let (mut window, events) = glfw.create_window(width, height, title.as_ref(), glfw::WindowMode::Windowed)
+        let (mut window, events) = glfw
+            .create_window(width, height, title.as_ref(), glfw::WindowMode::Windowed)
             .expect("Failed to create GLFW window.");
 
         window.make_current();
@@ -30,7 +31,7 @@ impl Display {
 
     pub fn poll_events<P>(&mut self, p: P)
     where
-        P: Fn(glfw::WindowEvent) -> bool
+        P: Fn(glfw::WindowEvent) -> bool,
     {
         self.glfw.poll_events();
         for (_, event) in glfw::flush_messages(&self.events) {
