@@ -64,6 +64,18 @@ impl Game {
                     }
                 }
 
+                entities = entities.into_iter().filter(|entity| {  
+                    let pred = entity.position.x >= camera.position.x - 10. && entity.position.x <= camera.position.x + 10.&&
+                        entity.position.z >= camera.position.z - 10. && entity.position.z <= camera.position.z + 10.;
+
+                    if !pred {
+                        entities_changed = true;
+                    }
+
+                    pred
+                }).collect();
+
+
                 if entities_changed {
                     from_gen_tx.send(TerrainGenMsg::UpdateTerrain(entities.clone())).unwrap();
                     entities_changed = false;
@@ -72,8 +84,11 @@ impl Game {
         });
 
         while !self.display.should_close() {
-            if let Ok(TerrainGenMsg::UpdateTerrain(new_entities)) = from_gen_rx.try_recv() {
-                entities = new_entities 
+            for msg in from_gen_rx.try_iter() {
+                if let TerrainGenMsg::UpdateTerrain(new_entities) = msg {
+                    entities = new_entities 
+                }
+
             }
 
             #[allow(clippy::match_like_matches_macro)]
