@@ -5,12 +5,12 @@ use nalgebra_glm::{Mat4, Vec3};
 use crate::display::Display;
 
 pub struct Camera {
-    position: Vec3,
-    rotation: (f32, f32, f32),
-    velocity: f32,
+    pub position: Vec3,
+    pub rotation: (f32, f32, f32),
+    pub velocity: f32,
 
-    speed: f32,
-    turn_speed: f32,
+    pub speed: f32,
+    pub turn_speed: f32,
 }
 
 impl Camera {
@@ -68,5 +68,11 @@ impl Camera {
             &matrix,
             &glm::vec3(-self.position.x, -self.position.y, -self.position.z),
         )
+    }
+}
+
+impl Default for Camera {
+    fn default() -> Self {
+        Self::new(glm::vec3(0., 0., 0.), (0., 0., 0.))
     }
 }
