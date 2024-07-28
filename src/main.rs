@@ -38,7 +38,7 @@ impl Game {
             texture,
         };
 
-        let mut entity = Entity::new(model, glm::vec3(0., 0., 0.), (0., 0., 0.), 1.0);
+        let mut entity = Entity::new(model, glm::vec3(0., 0., -2.), (0., 0., 0.), 1.0);
 
         let mut shader = Shader::from_files("default.vert.glsl", "default.frag.glsl").unwrap();
         shader.bind();
@@ -51,8 +51,8 @@ impl Game {
                 _ => true,
             });
 
-            entity.rotation.1 += 0.1;
-            entity.rotation.2 += 0.1;
+            entity.rotate(0., 0.2, 0.2);
+
 
             shader.bind();
             self.renderer.prepare();
@@ -68,7 +68,7 @@ impl Default for Game {
     fn default() -> Self {
         Self {
             display: Display::new(1280, 720, "hi"),
-            renderer: MasterRenderer,
+            renderer: MasterRenderer::new(1280, 720),
             loader: Loader::default(),
         }
     }

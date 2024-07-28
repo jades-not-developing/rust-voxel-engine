@@ -17,4 +17,16 @@ impl Entity {
             scale,
         }
     }
+
+    pub fn translate(&mut self, x: f32, y: f32, z: f32) {
+        self.position.x += x;
+        self.position.y += y;
+        self.position.z += z;
+    }
+
+    pub fn rotate(&mut self, x: f32, y: f32, z: f32) {
+        self.rotation.0 += x;
+        self.rotation.1 += y;
+        self.rotation.2 += z;
+    }
 }
