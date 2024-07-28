@@ -82,7 +82,7 @@ impl Loader {
             gl::BufferData(
                 gl::ELEMENT_ARRAY_BUFFER,
                 (indices.len() * std::mem::size_of::<u32>()) as isize,
-                 indices.as_ptr() as *const c_void,
+                indices.as_ptr() as *const c_void,
                 gl::STATIC_DRAW,
             );
         }

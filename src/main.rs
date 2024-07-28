@@ -1,5 +1,5 @@
 use glfw::{Action, Key};
-use rust_voxel::{display::Display, loader::Loader, renderer::MasterRenderer};
+use rust_voxel::{display::Display, loader::Loader, renderer::MasterRenderer, shader::Shader};
 
 pub struct Game {
     display: Display,
@@ -23,6 +23,8 @@ impl Game {
             ]
         );
 
+        let shader = Shader::from_files("default.vert.glsl", "default.frag.glsl").unwrap();
+
         while !self.display.should_close() {
             #[allow(clippy::match_like_matches_macro)]
             self.display.poll_events(|e| match e {
@@ -30,8 +32,10 @@ impl Game {
                 _ => true,
             });
 
+            shader.bind();
             self.renderer.prepare();
             self.renderer.render(&model);
+            shader.unbind();
 
             self.display.swap_buffers();
         }
