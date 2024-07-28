@@ -4,27 +4,29 @@ use gl::types::{GLint, GLuint};
 
 pub struct RawModel {
     pub vao_id: GLuint,
-    pub vertex_count: GLint,
+    pub index_count: GLint,
 }
 
 #[derive(Default)]
 pub struct Loader {
     vaos: Vec<GLuint>,
     vbos: Vec<GLuint>,
+    ebos: Vec<GLuint>,
 }
 
 impl Loader {
-    pub fn load_to_vao(&mut self, vertices: Vec<f32>) -> RawModel {
+    pub fn load_to_vao(&mut self, vertices: Vec<f32>, indices: Vec<u32>) -> RawModel {
         let vao_id = self.create_vao();
-        let vertex_count = vertices.len();
+        let index_count = indices.len() as GLint;
         self.store_data_in_attrib_list(vertices, 0, 3);
+        self.bind_indices_buffer(indices);
         unsafe {
             gl::BindVertexArray(0);
         }
 
         RawModel {
             vao_id,
-            vertex_count: vertex_count as GLint,
+            index_count,
         }
     }
 
@@ -71,6 +73,20 @@ impl Loader {
 
         self.vbos.push(vbo_id);
     }
+
+    fn bind_indices_buffer(&mut self, indices: Vec<u32>) {
+        let mut ebo_id = 0;
+        unsafe {
+            gl::GenBuffers(1, &mut ebo_id);
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_id);
+            gl::BufferData(
+                gl::ELEMENT_ARRAY_BUFFER,
+                (indices.len() * std::mem::size_of::<u32>()) as isize,
+                 indices.as_ptr() as *const c_void,
+                gl::STATIC_DRAW,
+            );
+        }
+    }
 }
 
 impl Drop for Loader {
@@ -84,6 +100,12 @@ impl Drop for Loader {
         for vbo in &self.vbos {
             unsafe {
                 gl::DeleteBuffers(1, vbo);
+            }
+        }
+
+        for ebo in &self.ebos {
+            unsafe {
+                gl::DeleteBuffers(1, ebo);
             }
         }
     }

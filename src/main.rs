@@ -10,14 +10,18 @@ pub struct Game {
 impl Game {
     pub fn run(&mut self) {
         #[rustfmt::skip]
-        let model = self.loader.load_to_vao(vec![
-            -0.5,  0.5, 0.0,
-            -0.5, -0.5, 0.0,
-             0.5, -0.5, 0.0,
-             0.5, -0.5, 0.0,
-             0.5,  0.5, 0.0,
-            -0.5,  0.5, 0.0,
-        ]);
+        let model = self.loader.load_to_vao(
+            vec![
+                -0.5,  0.5, 0.0,
+                -0.5, -0.5, 0.0,
+                0.5, -0.5, 0.0,
+                0.5,  0.5, 0.0,
+            ],
+            vec![
+                0, 1, 2,
+                2, 3, 0,
+            ]
+        );
 
         while !self.display.should_close() {
             #[allow(clippy::match_like_matches_macro)]
