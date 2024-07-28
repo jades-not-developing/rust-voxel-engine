@@ -4,14 +4,29 @@ pub struct Mouse {
     dy: f64,
     last_dx: f64,
     last_dy: f64,
+    locked: bool,
 }
 
 impl Mouse {
+    pub fn lock(&mut self) {
+        self.locked = true;
+    }
+
+    pub fn unlock(&mut self) {
+        self.locked = false;
+    }
+
     pub fn handle_move_x(&mut self, x: f64) {
+        if self.locked {
+            self.last_dx = x;
+        }
         self.dx = x;
     }
 
     pub fn handle_move_y(&mut self, y: f64) {
+        if self.locked {
+            self.last_dy = y;
+        }
         self.dy = y;
     }
 
@@ -30,5 +45,13 @@ impl Mouse {
         let value = self.dy - self.last_dy;
         self.last_dy = self.dy;
         value
+    }
+
+    pub unsafe fn force_set_position(&mut self, x: f64, y: f64) {
+        self.dx = x;
+        self.dy = y;
+
+        self.last_dx = x;
+        self.last_dy = y;
     }
 }

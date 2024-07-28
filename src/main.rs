@@ -3,7 +3,7 @@ use std::{borrow::BorrowMut, rc::Rc};
 use glfw::{Action, Key};
 use nalgebra_glm as glm;
 use rust_voxel::{
-    display::Display, entity::Entity, loader::Loader, math, model::Model, mouse::Mouse, renderer::MasterRenderer, shader::Shader
+    camera::Camera, display::Display, entity::Entity, loader::Loader, math, model::Model, mouse::Mouse, renderer::MasterRenderer, shader::Shader
 };
 
 pub struct Game {
@@ -47,6 +47,9 @@ impl Game {
         shader.bind();
         shader.uniform_vec3("u_Color", nalgebra_glm::vec3(0.0, 1.0, 0.0));
 
+        let mut camera = Camera::new(glm::vec3(0., 0., 0.), (0., 0., 0.));
+
+
         while !self.display.should_close() {
             #[allow(clippy::match_like_matches_macro)]
             self.display.poll_events(move |e, mouse, keyboard| match e {
@@ -59,17 +62,25 @@ impl Game {
                     keyboard.release(key);
                     true
                 },
+                glfw::WindowEvent::CursorEnter(_) => {
+                    mouse.lock();
+                    true
+                }
                 glfw::WindowEvent::CursorPos(x, y) => {
+                    dbg!(x, y);
                     mouse.handle_move(x, y);
                     true
                 },
                 _ => true,
             });
+            self.display.mouse.unlock();
 
             entity.rotate(0., 0.2, 0.2);
+            camera.move_camera(&mut self.display);
 
 
             shader.bind();
+            shader.uniform_mat4("u_View", camera.get_view_matrix());
             self.renderer.prepare();
             self.renderer.render(&entity, &mut shader);
             shader.unbind();

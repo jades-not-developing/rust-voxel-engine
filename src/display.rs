@@ -1,4 +1,4 @@
-use glfw::{fail_on_errors, Context, Glfw, GlfwReceiver, Key, PWindow, WindowEvent, WindowHint};
+use glfw::{fail_on_errors, ffi::{glfwSetInputMode, CURSOR, CURSOR_DISABLED}, Context, Glfw, GlfwReceiver, Key, PWindow, WindowEvent, WindowHint};
 
 use crate::{keyboard::Keyboard, mouse::Mouse};
 
@@ -20,10 +20,23 @@ impl Display {
             .create_window(width, height, title.as_ref(), glfw::WindowMode::Windowed)
             .expect("Failed to create GLFW window.");
 
+        unsafe {
+            glfwSetInputMode(window.window_ptr(), CURSOR, CURSOR_DISABLED);
+        }
+
+        let mut mouse = Mouse::default();
 
         window.make_current();
         window.set_key_polling(true);
         window.set_cursor_pos_polling(true);
+        window.set_cursor_enter_polling(true);
+        window.focus();
+
+        let (mx, my) = window.get_cursor_pos();
+
+        unsafe {
+            mouse.force_set_position(mx, my);
+        }
 
         gl::load_with(|s| glfw.get_proc_address_raw(s));
 
@@ -31,7 +44,7 @@ impl Display {
             glfw,
             window,
             events,
-            mouse: Mouse::default(),
+            mouse,
             keyboard: Keyboard::default(),
         }
     }
