@@ -1,6 +1,9 @@
-use std::ffi::c_void;
+use std::{ffi::c_void, path::Path};
+use image::EncodableLayout;
 
 use gl::types::{GLint, GLuint};
+
+use crate::texture::Texture;
 
 pub struct RawModel {
     pub vao_id: GLuint,
@@ -12,13 +15,15 @@ pub struct Loader {
     vaos: Vec<GLuint>,
     vbos: Vec<GLuint>,
     ebos: Vec<GLuint>,
+    textures: Vec<GLuint>,
 }
 
 impl Loader {
-    pub fn load_to_vao(&mut self, vertices: Vec<f32>, indices: Vec<u32>) -> RawModel {
+    pub fn load_to_vao(&mut self, vertices: Vec<f32>, indices: Vec<u32>, uvs: Vec<f32>) -> RawModel {
         let vao_id = self.create_vao();
         let index_count = indices.len() as GLint;
         self.store_data_in_attrib_list(vertices, 0, 3);
+        self.store_data_in_attrib_list(uvs, 1, 2);
         self.bind_indices_buffer(indices);
         unsafe {
             gl::BindVertexArray(0);
@@ -28,6 +33,37 @@ impl Loader {
             vao_id,
             index_count,
         }
+    }
+
+    pub fn load_texture(&mut self, texture_path: impl AsRef<Path>) -> Texture {
+        let mut texture_id = 0;
+
+        let img = image::open(texture_path).expect("Failed to open image").into_rgba8();
+
+        unsafe {
+            gl::GenTextures(1, &mut texture_id);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, texture_id);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as i32);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
+            gl::TexImage2D(
+                gl::TEXTURE_2D,
+                0,
+                gl::RGBA as i32,
+                img.width() as i32,
+                img.height() as i32,
+                0,
+                gl::RGBA,
+                gl::UNSIGNED_BYTE,
+                img.as_bytes().as_ptr() as *const _,
+            );
+        }
+
+        self.textures.push(texture_id);
+
+        Texture {
+            texture_id
+        } 
     }
 
     fn create_vao(&mut self) -> GLuint {
@@ -106,6 +142,12 @@ impl Drop for Loader {
         for ebo in &self.ebos {
             unsafe {
                 gl::DeleteBuffers(1, ebo);
+            }
+        }
+
+        for texture in &self.textures {
+            unsafe {
+                gl::DeleteTextures(1, texture);
             }
         }
     }

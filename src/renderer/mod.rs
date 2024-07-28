@@ -1,4 +1,4 @@
-use crate::loader::RawModel;
+use crate::model::Model;
 
 pub mod entity;
 
@@ -12,7 +12,7 @@ impl MasterRenderer {
         }
     }
 
-    pub fn render(&self, model: &RawModel) {
+    pub fn render(&self, model: &Model) {
         entity::render(model);
     }
 }

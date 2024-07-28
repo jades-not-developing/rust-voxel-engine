@@ -1,4 +1,4 @@
-use glfw::{fail_on_errors, Context, Glfw, GlfwReceiver, PWindow, WindowEvent};
+use glfw::{fail_on_errors, Context, Glfw, GlfwReceiver, PWindow, WindowEvent, WindowHint};
 
 pub struct Display {
     pub glfw: Glfw,
@@ -9,9 +9,13 @@ pub struct Display {
 impl Display {
     pub fn new(width: u32, height: u32, title: impl AsRef<str>) -> Self {
         let mut glfw = glfw::init(fail_on_errors!()).unwrap();
+        glfw.window_hint(WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core));
+        glfw.window_hint(WindowHint::ContextVersion(3, 3));
+
         let (mut window, events) = glfw
             .create_window(width, height, title.as_ref(), glfw::WindowMode::Windowed)
             .expect("Failed to create GLFW window.");
+
 
         window.make_current();
         window.set_key_polling(true);

@@ -1,5 +1,5 @@
 use glfw::{Action, Key};
-use rust_voxel::{display::Display, loader::Loader, renderer::MasterRenderer, shader::Shader};
+use rust_voxel::{display::Display, loader::Loader, model::Model, renderer::MasterRenderer, shader::Shader};
 
 pub struct Game {
     display: Display,
@@ -10,7 +10,7 @@ pub struct Game {
 impl Game {
     pub fn run(&mut self) {
         #[rustfmt::skip]
-        let model = self.loader.load_to_vao(
+        let raw_model = self.loader.load_to_vao(
             vec![
                 -0.5,  0.5, 0.0,
                 -0.5, -0.5, 0.0,
@@ -20,12 +20,25 @@ impl Game {
             vec![
                 0, 1, 2,
                 2, 3, 0,
+            ],
+            vec![
+                0.0, 0.0,
+                0.0, 1.0,
+                1.0, 1.0,
+                1.0, 0.0,
             ]
         );
+        let texture = self.loader.load_texture("res/img/dirt.png");
+
+        let model = Model {
+            data: raw_model,
+            texture
+        };
 
         let mut shader = Shader::from_files("default.vert.glsl", "default.frag.glsl").unwrap();
         shader.bind();
         shader.uniform_vec3("u_Color", nalgebra_glm::vec3(0.0, 1.0, 0.0));
+
 
         while !self.display.should_close() {
             #[allow(clippy::match_like_matches_macro)]
