@@ -88,6 +88,14 @@ impl Shader {
         }
     }
 
+    pub fn uniform_mat4(&mut self, name: impl Into<String>, value: glm::Mat4) {
+        let location = self.uniform_location(name);
+
+        unsafe {
+            gl::UniformMatrix4fv(location, 1, gl::FALSE, value.as_ptr());
+        }
+    }
+
     fn uniform_location(&mut self, name: impl Into<String>) -> GLint {
         let name = name.into();
         match self.uniform_cache.get(&name) {

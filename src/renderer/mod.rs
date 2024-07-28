@@ -1,4 +1,4 @@
-use crate::model::Model;
+use crate::{entity::Entity, shader::Shader};
 
 pub mod entity;
 
@@ -12,7 +12,7 @@ impl MasterRenderer {
         }
     }
 
-    pub fn render(&self, model: &Model) {
-        entity::render(model);
+    pub fn render(&self, entity: &Entity, shader: &mut Shader) {
+        entity::render(entity, shader);
     }
 }

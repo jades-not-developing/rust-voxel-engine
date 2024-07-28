@@ -4,3 +4,5 @@ pub mod renderer;
 pub mod shader;
 pub mod texture;
 pub mod model;
+pub mod math;
+pub mod entity;

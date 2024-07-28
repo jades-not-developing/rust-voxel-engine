@@ -1,19 +1,30 @@
-use crate::model::Model;
+use crate::{entity::Entity, math, shader::Shader};
 
 
-pub fn render(model: &Model) {
+pub fn render(entity: &Entity, shader: &mut Shader) {
+    let transform_matrix = math::create_transformation_matrix(
+        entity.position, 
+        entity.rotation, 
+        entity.scale
+    );
+
     unsafe {
-        gl::BindVertexArray(model.data.vao_id);
+        gl::BindVertexArray(entity.model.data.vao_id);
         gl::EnableVertexAttribArray(0);
         gl::EnableVertexAttribArray(1);
-        model.texture.bind();
+        entity.model.texture.bind();
+        shader.bind();
+        shader.uniform_mat4("u_Transform", transform_matrix);
+
         gl::DrawElements(
             gl::TRIANGLES,
-            model.data.index_count,
+            entity.model.data.index_count,
             gl::UNSIGNED_INT,
             std::ptr::null(),
         );
-        model.texture.unbind();
+
+        shader.unbind();
+        entity.model.texture.unbind();
         gl::DisableVertexAttribArray(0);
         gl::DisableVertexAttribArray(1);
     }

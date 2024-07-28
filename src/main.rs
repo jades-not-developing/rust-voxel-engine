@@ -1,5 +1,8 @@
 use glfw::{Action, Key};
-use rust_voxel::{display::Display, loader::Loader, model::Model, renderer::MasterRenderer, shader::Shader};
+use nalgebra_glm as glm;
+use rust_voxel::{
+    display::Display, entity::Entity, loader::Loader, math, model::Model, renderer::MasterRenderer, shader::Shader
+};
 
 pub struct Game {
     display: Display,
@@ -32,13 +35,14 @@ impl Game {
 
         let model = Model {
             data: raw_model,
-            texture
+            texture,
         };
+
+        let mut entity = Entity::new(model, glm::vec3(0., 0., 0.), (0., 0., 0.), 1.0);
 
         let mut shader = Shader::from_files("default.vert.glsl", "default.frag.glsl").unwrap();
         shader.bind();
         shader.uniform_vec3("u_Color", nalgebra_glm::vec3(0.0, 1.0, 0.0));
-
 
         while !self.display.should_close() {
             #[allow(clippy::match_like_matches_macro)]
@@ -47,9 +51,12 @@ impl Game {
                 _ => true,
             });
 
+            entity.rotation.1 += 0.1;
+            entity.rotation.2 += 0.1;
+
             shader.bind();
             self.renderer.prepare();
-            self.renderer.render(&model);
+            self.renderer.render(&entity, &mut shader);
             shader.unbind();
 
             self.display.swap_buffers();
