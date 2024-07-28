@@ -1,13 +1,16 @@
+use std::{borrow::BorrowMut, rc::Rc};
+
 use glfw::{Action, Key};
 use nalgebra_glm as glm;
 use rust_voxel::{
-    display::Display, entity::Entity, loader::Loader, math, model::Model, renderer::MasterRenderer, shader::Shader
+    display::Display, entity::Entity, loader::Loader, math, model::Model, mouse::Mouse, renderer::MasterRenderer, shader::Shader
 };
 
 pub struct Game {
     display: Display,
     renderer: MasterRenderer,
     loader: Loader,
+    mouse: Mouse,
 }
 
 impl Game {
@@ -46,8 +49,20 @@ impl Game {
 
         while !self.display.should_close() {
             #[allow(clippy::match_like_matches_macro)]
-            self.display.poll_events(|e| match e {
+            self.display.poll_events(move |e, mouse, keyboard| match e {
                 glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) => false,
+                glfw::WindowEvent::Key(key, _, Action::Press, _) => {
+                    keyboard.press(key);
+                    true
+                },
+                glfw::WindowEvent::Key(key, _, Action::Release, _) => {
+                    keyboard.release(key);
+                    true
+                },
+                glfw::WindowEvent::CursorPos(x, y) => {
+                    mouse.handle_move(x, y);
+                    true
+                },
                 _ => true,
             });
 
@@ -70,6 +85,7 @@ impl Default for Game {
             display: Display::new(1280, 720, "hi"),
             renderer: MasterRenderer::new(1280, 720),
             loader: Loader::default(),
+            mouse: Mouse::default(),
         }
     }
 }

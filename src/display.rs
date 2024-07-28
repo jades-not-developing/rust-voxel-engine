@@ -1,9 +1,13 @@
-use glfw::{fail_on_errors, Context, Glfw, GlfwReceiver, PWindow, WindowEvent, WindowHint};
+use glfw::{fail_on_errors, Context, Glfw, GlfwReceiver, Key, PWindow, WindowEvent, WindowHint};
+
+use crate::{keyboard::Keyboard, mouse::Mouse};
 
 pub struct Display {
     pub glfw: Glfw,
     pub window: PWindow,
     pub events: GlfwReceiver<(f64, WindowEvent)>,
+    pub mouse: Mouse,
+    pub keyboard: Keyboard,
 }
 
 impl Display {
@@ -19,6 +23,7 @@ impl Display {
 
         window.make_current();
         window.set_key_polling(true);
+        window.set_cursor_pos_polling(true);
 
         gl::load_with(|s| glfw.get_proc_address_raw(s));
 
@@ -26,6 +31,8 @@ impl Display {
             glfw,
             window,
             events,
+            mouse: Mouse::default(),
+            keyboard: Keyboard::default(),
         }
     }
 
@@ -35,11 +42,11 @@ impl Display {
 
     pub fn poll_events<P>(&mut self, p: P)
     where
-        P: Fn(glfw::WindowEvent) -> bool,
+        P: Fn(glfw::WindowEvent, &mut Mouse, &mut Keyboard) -> bool,
     {
         self.glfw.poll_events();
         for (_, event) in glfw::flush_messages(&self.events) {
-            if !p(event) {
+            if !p(event, &mut self.mouse, &mut self.keyboard) {
                 self.window.set_should_close(true);
             }
         }

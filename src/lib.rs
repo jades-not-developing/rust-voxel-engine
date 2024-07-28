@@ -6,3 +6,6 @@ pub mod texture;
 pub mod model;
 pub mod math;
 pub mod entity;
+pub mod camera;
+pub mod mouse;
+pub mod keyboard;
