@@ -1,20 +1,14 @@
-use crate::{entity::Entity, math, shader::Shader};
+use crate::{entity::Entity, shader::Shader};
 
 
 pub fn render(entity: &Entity, shader: &mut Shader) {
-    let transform_matrix = math::create_transformation_matrix(
-        entity.position, 
-        entity.rotation, 
-        entity.scale
-    );
-
     unsafe {
         gl::BindVertexArray(entity.model.data.vao_id);
         gl::EnableVertexAttribArray(0);
         gl::EnableVertexAttribArray(1);
         entity.model.texture.bind();
         shader.bind();
-        shader.uniform_mat4("u_Transform", transform_matrix);
+        shader.uniform_mat4("u_Transform", entity.get_transformation_matrix());
 
         gl::DrawElements(
             gl::TRIANGLES,

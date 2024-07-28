@@ -1,4 +1,4 @@
-use crate::model::Model;
+use crate::{math, model::Model};
 use nalgebra_glm as glm;
 
 pub struct Entity {
@@ -28,5 +28,13 @@ impl Entity {
         self.rotation.0 += x;
         self.rotation.1 += y;
         self.rotation.2 += z;
+    }
+
+    pub fn get_transformation_matrix(&self) -> glm::Mat4 {
+        math::create_transformation_matrix(
+            self.position, 
+            self.rotation, 
+            self.scale
+        )
     }
 }
