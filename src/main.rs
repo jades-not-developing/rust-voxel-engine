@@ -1,9 +1,17 @@
 
+use std::{sync::mpsc, time::Duration};
+
 use glfw::{Action, Key};
 use nalgebra_glm as glm;
 use rust_voxel::{
     camera::Camera, display::Display, entity::Entity, loader::{Loader, RawModel}, model::Model, renderer::MasterRenderer, shader::Shader
 };
+
+pub enum TerrainGenMsg {
+    UpdateTerrain(Vec<Entity>),
+    UpdateCamera(Camera),
+    CloseTerrainGen,
+}
 
 pub struct Game {
     display: Display,
@@ -22,21 +30,50 @@ impl Game {
             texture,
         };
 
-        let mut entites: Vec<Entity> = vec![];
+        let mut entities: Vec<Entity> = vec![];
 
 
         let mut shader = Shader::from_files("default.vert.glsl", "default.frag.glsl").unwrap();
         shader.bind();
         shader.uniform_vec3("u_Color", nalgebra_glm::vec3(0.0, 1.0, 0.0));
 
+        let (to_gen_tx, to_gen_rx) = mpsc::channel::<TerrainGenMsg>();
+        let (from_gen_tx, from_gen_rx) = mpsc::channel::<TerrainGenMsg>();
 
-        while !self.display.should_close() {
-            for x in (self.camera.position.x - 10.) as i64..(self.camera.position.x + 10.) as i64 {
-                for z in (self.camera.position.z - 10.) as i64..(self.camera.position.z + 10.) as i64 {
-                    if entites.iter().find(|&e| e.position.x == x as f32 && e.position.z == z as f32).is_none() {
-                        entites.push(Entity::new(&model, glm::vec3(x as f32, 0., z as f32), (0., 0., 0.), 1.0));
+        let camera = self.camera.clone();
+        let _ = std::thread::spawn(move || {
+            let mut camera = camera;
+            let mut entities: Vec<Entity> = vec![];
+            let mut entities_changed = false;
+
+            loop {
+                match to_gen_rx.try_recv() {
+                    Ok(TerrainGenMsg::CloseTerrainGen) => break,
+                    Ok(TerrainGenMsg::UpdateCamera(new_camera)) => {
+                        camera = new_camera;
+                    }
+                    _ => {},
+                }
+
+                for x in (camera.position.x - 10.) as i64..(camera.position.x + 10.) as i64 {
+                    for z in (camera.position.z - 10.) as i64..(camera.position.z + 10.) as i64 {
+                        if entities.iter().find(|&e| e.position.x == x as f32 && e.position.z == z as f32).is_none() {
+                            entities.push(Entity::new(&model, glm::vec3(x as f32, 0., z as f32), (0., 0., 0.), 1.0));
+                            entities_changed = true;
+                        }
                     }
                 }
+
+                if entities_changed {
+                    from_gen_tx.send(TerrainGenMsg::UpdateTerrain(entities.clone())).unwrap();
+                    entities_changed = false;
+                }
+            }
+        });
+
+        while !self.display.should_close() {
+            if let Ok(TerrainGenMsg::UpdateTerrain(new_entities)) = from_gen_rx.try_recv() {
+                entities = new_entities 
             }
 
             #[allow(clippy::match_like_matches_macro)]
@@ -64,17 +101,23 @@ impl Game {
 
             self.camera.move_camera(&mut self.display);
 
+            to_gen_tx.send(TerrainGenMsg::UpdateCamera(self.camera.clone())).unwrap();
+
 
             shader.bind();
             shader.uniform_mat4("u_View", self.camera.get_view_matrix());
             self.renderer.prepare();
-            for entity in &entites {
+            for entity in &entities {
                 self.renderer.render(entity, &mut shader);
             }
             shader.unbind();
 
             self.display.swap_buffers();
         }
+
+
+
+        to_gen_tx.send(TerrainGenMsg::CloseTerrainGen).unwrap();
     }
 }
 

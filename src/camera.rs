@@ -4,6 +4,7 @@ use nalgebra_glm::{Mat4, Vec3};
 
 use crate::display::Display;
 
+#[derive(Clone, Debug)]
 pub struct Camera {
     pub position: Vec3,
     pub rotation: (f32, f32, f32),
@@ -19,7 +20,7 @@ impl Camera {
             position,
             rotation,
             velocity: 0.0,
-            speed: 0.05,
+            speed: 0.1,
             turn_speed: 0.1,
         }
     }
